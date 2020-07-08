@@ -6,46 +6,27 @@ const jwt = require('jsonwebtoken')
 
 const qApi = require('./question')
 
-wss.on('connection',(ws, req) => {
-    console.log('hello')
+wss.on('connection',(ws, uid) => {
+
   ws.on('message', (msg) => {
     try {
       msg = JSON.parse(msg)
     } catch(e) {
       return
     }
-    if (msg && msg.jwt) {
-      try{
-        decoded = jwt.verify(msg.jwt, config.secret)
-      } catch (e){
-        return
-      }
-      db.user.findOne({
-        where: {
-          uid: decoded.uid
-        }
-      }).then((user) =>{
-        if(user){
-          handleMessage(ws, msg, user.toJSON())
-        }
-      }).catch((e) => {
-        console.log(e)
-      })
-    } else {
-      ws.send(JSON.stringify({ // kinda unnecessary
-        status: 'fail',
-        e: 'bad request'
-      }))
+    msg.uid = parseInt(msg.uid)
+    if (msg && msg.uid == uid) {
+      handleMessage(ws, msg, uid)
     }
-    
   })
 })
 
-function handleMessage(ws, msg, user) {
+function handleMessage(ws, msg, uid) {
   if (!msg.body) return
-  msg.body.uid = user.uid
+  msg.body.uid = uid
   switch (msg.req) {
-    case 'add_q': qApi.addQuestion(ws, msg, user)
+    case 'add_q': 
+      qApi.addQuestion(ws, msg)
       break;
   
     default:
@@ -63,9 +44,8 @@ async function validate(headers) {
           uid: decoded.uid
         }
       })
-      // console.log(user)
       if(user){
-        return
+        return user.uid
       }
       throw Error('Bad Auth')
     }
@@ -76,21 +56,18 @@ async function validate(headers) {
 exports.init = function (server) {
 
   server.on('upgrade', function (req, socket, head) {
-    //console.log(req)
-    console.log(req.headers)
-    validate(req.headers).then(() => {
+    console.log(req)//to test android stuff
+    validate(req.headers).then((uid) => {
       wss.handleUpgrade(req, socket, head, function done(ws) {
-        wss.emit('connection', ws, req)
+        wss.emit('connection', ws, uid)
       })
     }).catch((e) => {
-      console.log(e)
       socket.write('HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
         'Upgrade: WebSocket\r\n' +
         'Connection: Upgrade\r\n' +
         '\r\n')
       socket.end()
       socket.destroy()
-      return
     })
     
   })

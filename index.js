@@ -10,7 +10,13 @@ const port = 3000
 const privateKey = require("./config.json").jwt.secret
 
 
-app.use(bodyParser.json())
+app.use(bodyParser.json(), (err, req, res, next) => {
+  if(err instanceof SyntaxError){
+    res.status(400).end()
+  } else {
+    next()
+  }
+})
 
 app.post('/user/add', (req, res) => {  
   bcrypt.hash(req.body.password, 8).then((pass) => {
@@ -23,32 +29,22 @@ app.post('/user/add', (req, res) => {
       mobile: req.body.mobile,
       photo: ''
     }).then((user) => {
-      return res.json({
+      res.json({
         status: 'success',
         body: user
       })
-    }).catch((e) => {
-      return res.json({
-        status: 'fail',
-        err: e
-      })
+    }).catch(() => {
+      res.status(400).end()
     })
-  }).catch((e) => {
-    return res.json({
-      status: 'fail',
-      err: e
-    })
+  }).catch(() => {
+    res.status(400).end()
   })
 })
 
 app.post('/validate/', (req, res) => {
-  console.log(req.body)
-  if (!req.body.username) return res.json({
-    status : 'bad request'
-  })
-  if (!req.body.password) return res.json({
-    status : 'bad request'
-  })
+  if (!req.body.username) return res.status(400).end()
+  if (!req.body.password) return res.status(400).end()
+
   db.user.findOne({
     attributes: [
       'uid',
@@ -64,35 +60,31 @@ app.post('/validate/', (req, res) => {
       username: req.body.username,
     }
   }).then((user) => {
-    if (!user) return res.json({
-      status : 'invalid auth'
-    })
+    if (!user) {
+      res.status(400).end()
+      return
+    }
     bcrypt.compare(req.body.password, user.password)
     .then((isSuccess) => {
-      if (isSuccess){
+      if (isSuccess) {
         user.password = undefined
         user.dataValues.jwt = jwt.sign({ uid: user.uid }, privateKey);
-        return res.json({
+        res.json({
           status: 'success',
           body: user
         })
       } else {
-        return res.json({
-          status : 'invalid auth'
-        })
+        res.status(400).end()
       }
-      
-    }).catch((e) =>{
-      console.log(e)
-      return res.json({
-        status: 'fail',
-        err: JSON.stringify(e)
-      })
+    }).catch(() => {
+      res.status(400).end()
     })
+  }).catch(() => {
+    res.status(400).end()
   })
 })
-app.use(express.static('app/public'))
 
+app.use(express.static('app/public'))
 
 app.get('/', (req, res) => res.send('OK'))
 

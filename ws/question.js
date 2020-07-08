@@ -1,6 +1,6 @@
 const db = require('../models')
 
-exports.addQuestion = function (ws, msg, user) {
+exports.addQuestion = function (ws, msg) {
   if (!msg.body.uid || !msg.body.local_qid) return
   db.question.findOne({
     where: {
@@ -9,29 +9,17 @@ exports.addQuestion = function (ws, msg, user) {
     }
   }).then((q) => {
     if (q) {
-      ws.send(JSON.stringify({
-        req: msg.req,
-        status: 'success',
-        body: q
-      }))
+      return q
     } else {
-      db.question.create(msg.body).then((q) => {
-        ws.send(JSON.stringify({
-          req: msg.req,
-          status: 'success',
-          body: q
-        }))
-        }).catch((e) => {
-          ws.send(JSON.stringify({
-            req: msg.req,
-            status: 'fail',
-            body: {
-              local_qid: msg.body.local_qid
-            }
-          }))
-        })
+      return db.question.create(msg.body)
     }
-  }).catch((e) => {
+  }).then((q) => {
+    ws.send(JSON.stringify({
+      req: msg.req,
+      status: 'success',
+      body: q
+    }))
+    }).catch((e) => {
     ws.send(JSON.stringify({
       req: msg.req,
       status: 'fail',
