@@ -9,6 +9,9 @@ const port = 3000
 
 const privateKey = require("./config.json").jwt.secret
 
+app.use(bodyParser.urlencoded({
+  extended: true
+}))
 
 app.use(bodyParser.json(), (err, req, res, next) => {
   if(err instanceof SyntaxError){
