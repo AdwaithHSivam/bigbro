@@ -9,6 +9,8 @@ const qApi = require('./question')
 wss.on('connection',(ws, uid) => {
 
   ws.on('message', (msg) => {
+    console.log(uid)
+    console.log(msg)
     try {
       msg = JSON.parse(msg)
     } catch(e) {
@@ -56,7 +58,6 @@ async function validate(headers) {
 exports.init = function (server) {
 
   server.on('upgrade', function (req, socket, head) {
-    console.log(req)//to test android stuff
     validate(req.headers).then((uid) => {
       wss.handleUpgrade(req, socket, head, function done(ws) {
         wss.emit('connection', ws, uid)
