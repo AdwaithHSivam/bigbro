@@ -1,31 +1,27 @@
 const db = require('../models')
 
-exports.addQuestion = function (ws, msg) {
-  if (!msg.uid || !msg.body.local_qid) return
+exports.addChat = function (ws, msg) {
+  if (!msg.uid || !msg.body.qid || !msg.body.local_cid) return
   msg.body.uid = msg.uid
-  db.question.findOrCreate({
+  db.chat.findOrCreate({
     where: {
       uid: msg.body.uid,
-      local_qid: msg.body.local_qid
+      local_cid: msg.body.local_cid
     },
     defaults: msg.body
-  }).then(q => {
+  }).then(c => {
     ws.send(JSON.stringify({
       req: msg.req,
       status: 'success',
-      body: q[0]
+      body: c[0]
     }))
   }).catch(() => {
     ws.send(JSON.stringify({
       req: msg.req,
       status: 'fail',
       body: {
-        local_qid: msg.body.local_qid
+        local_cid: msg.body.local_cid
       }
     }))
   })
-}
-
-exports.sendUpdates = function (ws, msg) {
-  
 }

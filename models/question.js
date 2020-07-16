@@ -24,6 +24,11 @@ module.exports = (sequelize) => {
       mid: {
         type: DataTypes.INTEGER,
       },
+      status: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false,
+      },
     },
     {
       tableName: 'questions',

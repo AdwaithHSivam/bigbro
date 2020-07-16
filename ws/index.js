@@ -1,12 +1,21 @@
 const WebSocket = require('ws')
-const wss = new WebSocket.Server({ noServer: true })
+const wss = new WebSocket.Server({ 
+  noServer: true,
+})
 const config = require('../config.json').jwt
 const db = require('../models')
 const jwt = require('jsonwebtoken')
 
 const qApi = require('./question')
+const cApi = require('./chat')
+const uApi = require('./user')
 
-wss.on('connection',(ws, uid) => {
+wss.on('connection',(ws, user) => {
+
+  console.log(`${user.username} is online!`)
+  ws.on('close', () => {
+    console.log(`${user.username} is offline!`)
+  })
 
   ws.on('message', (msg) => {
     try {
@@ -15,21 +24,25 @@ wss.on('connection',(ws, uid) => {
       return
     }
     msg.uid = parseInt(msg.uid)
-    if (msg && msg.uid == uid) {
-      handleMessage(ws, msg, uid)
+    if (msg && msg.uid == user.uid) {
+      handleMessage(ws, msg, user)
     }
   })
 })
 
-function handleMessage(ws, msg, uid) {
+function handleMessage(ws, msg, user) {
   if (!msg.body) return
-  msg.body.uid = uid
   switch (msg.req) {
-    case 'add_q': 
+    case 'add_q':
       qApi.addQuestion(ws, msg)
       break;
-  
-    default:
+
+    case 'add_c':
+      cApi.addChat(ws, msg)
+      break;
+    
+    case 'get_u':
+      uApi.getUser(ws, msg)
       break;
   }
 }
@@ -45,7 +58,7 @@ async function validate(headers) {
         }
       })
       if(user){
-        return user.uid
+        return user.toJSON()
       }
       throw Error('Bad Auth')
     }
@@ -56,10 +69,11 @@ async function validate(headers) {
 exports.init = function (server) {
 
   server.on('upgrade', function (req, socket, head) {
-    console.log(req)//to test android stuff
-    validate(req.headers).then((uid) => {
+    //console.log(req)//to test android stuff
+    validate(req.headers).then((user) => {
       wss.handleUpgrade(req, socket, head, function done(ws) {
-        wss.emit('connection', ws, uid)
+        ws.user = user
+        wss.emit('connection', ws, user)
       })
     }).catch((e) => {
       socket.write('HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
