@@ -17,13 +17,13 @@ exports.validate = async (username, password) => {//chain this maybe
     ],
     where: {
       username: username,
-    }
+    },
+    raw: true
   })
 
   if (!user) throw Error()
   success = await bcrypt.compare(password, user.password)
   if (!success) throw Error()
-  user = user.toJSON()
   user.password = undefined
   user.jwt = jwt.sign({ uid: user.uid }, privateKey);
   return user

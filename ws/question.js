@@ -1,6 +1,27 @@
 const db = require('../models')
 
-exports.addQuestion = function (ws, msg) {
+exports.getQuestion = function (ws, msg) {
+  if (!msg.body.qid) return
+  db.question.findOne({
+    where: {
+      qid: msg.body.qid,
+    },
+    raw: true
+  }).then(q => {
+    if (!q) throw Error()
+    ws.send(JSON.stringify({
+      req: 'get_q',
+      body: q
+    }))
+  }).catch(() => {
+    ws.send(JSON.stringify({
+      req: 'err_q',
+      body: msg.body
+    }))
+  })
+}
+
+exports.addQuestion = function (ws, msg, wss) {
   if (!msg.uid || !msg.body.local_qid) return
   msg.body.uid = msg.uid
   db.question.findOrCreate({
@@ -8,24 +29,39 @@ exports.addQuestion = function (ws, msg) {
       uid: msg.body.uid,
       local_qid: msg.body.local_qid
     },
-    defaults: msg.body
+    defaults: msg.body,
+    raw: true
   }).then(q => {
-    ws.send(JSON.stringify({
-      req: msg.req,
-      status: 'success',
-      body: q[0]
-    }))
+    if (q[1]) {
+      wss.sendToAll(JSON.stringify({
+        req: 'get_q',
+        body: q[0]
+      }))
+    } else {
+      ws.send(JSON.stringify({
+        req: 'get_q',
+        body: q[0]
+      }))
+    }
   }).catch(() => {
     ws.send(JSON.stringify({
-      req: msg.req,
-      status: 'fail',
-      body: {
-        local_qid: msg.body.local_qid
-      }
+      req: 'err_q',
+      body: msg.body
     }))
   })
 }
 
-exports.sendUpdates = function (ws, msg) {
-  
+exports.sendUpdates = function (ws) {
+  db.question.findAll({
+    attributes: ['qid'],
+    limit: 20,
+    raw: true
+  }).then(qs => {
+    ws.send(JSON.stringify({
+      req: 'upd_q',
+      body: {
+        qid: qs.map(q => q.qid)
+      }
+    }))
+  }).catch(() => {})
 }
