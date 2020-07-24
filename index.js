@@ -1,7 +1,7 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
-
+console.log(process.env)
 const express = require('express')
 const db  = require('./models')
 const bodyParser = require('body-parser')
@@ -59,6 +59,8 @@ app.get('/', (req, res) => res.send('OK'))
 db.sequelize.sync().then(() => {
   let server = app.listen(port, () => console.log(`App listening on port http://localhost:${port}!`))
   ws.init(server)
+}).catch((e) => {
+  console.log(e)
 })
 
 module.exports = app
