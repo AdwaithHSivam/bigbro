@@ -1,7 +1,7 @@
 const db = require('./models')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const privateKey = require("./config.json").jwt.secret
+const privateKey = process.env.JWT_SECRET
 
 exports.validate = async (username, password) => {//chain this maybe
   user = await db.user.findOne({

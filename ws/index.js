@@ -2,7 +2,7 @@ const WebSocket = require('ws')
 const wss = new WebSocket.Server({ 
   noServer: true,
 })
-const config = require('../config.json').jwt
+const privateKey = process.env.JWT_SECRET
 const db = require('../models')
 const jwt = require('jsonwebtoken')
 
@@ -76,7 +76,7 @@ async function validate(headers) {
   var header = headers['sec-websocket-protocol']
     var raw = JSON.parse(header)
     if (raw[0] == 'access_token'){
-      decoded = jwt.verify(raw[1], config.secret)
+      decoded = jwt.verify(raw[1], privateKey)
       user = await db.user.findOne({
         where: {
           uid: decoded.uid
