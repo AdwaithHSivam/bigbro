@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const privateKey = process.env.JWT_SECRET
 
 exports.validate = async (username, password) => {//chain this maybe
-  user = await db.user.findOne({
+  let user = await db.user.findOne({
     attributes: [
       'uid',
       'password',
@@ -22,7 +22,7 @@ exports.validate = async (username, password) => {//chain this maybe
   })
 
   if (!user) throw Error()
-  success = await bcrypt.compare(password, user.password)
+  let success = await bcrypt.compare(password, user.password)
   if (!success) throw Error()
   user.password = undefined
   user.jwt = jwt.sign({ uid: user.uid }, privateKey);
@@ -30,9 +30,10 @@ exports.validate = async (username, password) => {//chain this maybe
 }
 
 exports.add_user = async (body) => {
-  pass = await bcrypt.hash(body.password, 8)
+  let pass = await bcrypt.hash(body.password, 8)
   
-  user = await db.user.create({
+  let user = await db.user.create({
+    uid: body.uid,
     username: body.username,
     password: pass,
     su: body.su,

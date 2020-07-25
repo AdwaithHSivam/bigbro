@@ -43,13 +43,13 @@ exports.addChat = function (ws, msg, wss) {
       })
     ])
   }).then((ret) => {
-    [uid2, [c, isNew]] = ret
-    res = JSON.stringify({
+    let uid2 = ret[0], c = ret[1]
+    let res = JSON.stringify({
       req: 'get_c',
       body: c[0]
     })
     ws.send(res)
-    if (isNew && !uid2) {
+    if (c[1] && uid2) {
       wss.sendToUsers([uid2], res)
     }
   }).catch(() => {

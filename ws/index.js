@@ -12,7 +12,7 @@ const uApi = require('./user')
 
 wss.sendToUsers = function(uids, msg) {
   for(let ws of wss.clients) {
-    if ([uids].includes(ws.user.uid)) {
+    if (uids.includes(ws.user.uid)) {
       ws.send(msg)
     }
   }
@@ -25,7 +25,7 @@ wss.sendToAll = function(msg) {
 }
 
 wss.on('connection',(ws) => {
-  user = ws.user
+  let user = ws.user
   console.log(`${user.username} is online!`)
   ws.on('close', () => {
     console.log(`${user.username} is offline!`)
@@ -52,32 +52,36 @@ function handleMessage(ws, msg) {
   switch (msg.req) {
     case 'add_q':
       qApi.addQuestion(ws, msg, wss)
-      break;
+      break
 
     case 'add_c':
       cApi.addChat(ws, msg, wss)
-      break;
+      break
+
+    case 'acc_q':
+      qApi.acceptQ(ws, msg, wss)
+      break
 
     case 'get_q':
       qApi.getQuestion(ws, msg)
-      break;
+      break
 
     case 'get_c':
       cApi.getChats(ws, msg)
-      break;
+      break
 
     case 'get_u':
       uApi.getUser(ws, msg)
-      break;
+      break
   }
 }
 
 async function validate(headers) {
-  var header = headers['sec-websocket-protocol']
-    var raw = JSON.parse(header)
+  let header = headers['sec-websocket-protocol']
+    let raw = JSON.parse(header)
     if (raw[0] == 'access_token'){
-      decoded = jwt.verify(raw[1], privateKey)
-      user = await db.user.findOne({
+      let decoded = jwt.verify(raw[1], privateKey)
+      let user = await db.user.findOne({
         where: {
           uid: decoded.uid
         },

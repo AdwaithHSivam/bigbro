@@ -65,3 +65,27 @@ exports.sendUpdates = function (ws) {
     }))
   }).catch(() => {})
 }
+
+exports.acceptQ = function (ws, msg, wss) {
+  if (!msg.uid || !msg.body.qid) return
+  if (ws.user.su == 2) return
+  db.question.update({mid: msg.uid},{ 
+    where: {
+      qid: msg.body.qid,
+      mid: null
+    }
+  }).then(ret => {
+    if (ret[0] == 0) throw Error()
+    return db.question.findByPk(msg.body.qid)
+  }).then(q => {
+    wss.sendToAll(JSON.stringify({
+      req: 'get_q',
+      body: q
+    }))
+  }).catch(() => {
+    ws.send(JSON.stringify({
+      req: 'err_q',
+      body: msg.body
+    }))
+  })
+}

@@ -1,7 +1,6 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
-console.log(process.env)
 const express = require('express')
 const db  = require('./models')
 const bodyParser = require('body-parser')
