@@ -92,7 +92,7 @@ exports.acceptQ = function (ws, msg, wss) {
 
 exports.closeQ = function (ws, msg, wss) {
   if (!msg.uid || !msg.body.qid) return
-  db.question.update({status: msg.uid},{ 
+  db.question.update({status: 1},{ 
     where: {
       qid: msg.body.qid,
       uid: msg.uid
