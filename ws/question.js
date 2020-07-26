@@ -89,3 +89,26 @@ exports.acceptQ = function (ws, msg, wss) {
     }))
   })
 }
+
+exports.closeQ = function (ws, msg, wss) {
+  if (!msg.uid || !msg.body.qid) return
+  db.question.update({status: msg.uid},{ 
+    where: {
+      qid: msg.body.qid,
+      uid: msg.uid
+    }
+  }).then(ret => {
+    if (ret[0] == 0) throw Error()
+    return db.question.findByPk(msg.body.qid)
+  }).then(q => {
+    wss.sendToAll(JSON.stringify({
+      req: 'get_q',
+      body: q
+    }))
+  }).catch(() => {
+    ws.send(JSON.stringify({
+      req: 'err_q',
+      body: msg.body
+    }))
+  })
+}

@@ -28,7 +28,7 @@ exports.addChat = function (ws, msg, wss) {
   db.question.findByPk(msg.body.qid, {
     raw: true,
   }).then(q => {
-    if (!q) throw Error()
+    if (!q || q.status == 0) throw Error()
     if (q.uid === msg.uid) uid2 = q.mid
     else if (q.mid === msg.uid) uid2 = q.uid
     else throw Error()

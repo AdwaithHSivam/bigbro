@@ -62,6 +62,10 @@ function handleMessage(ws, msg) {
       qApi.acceptQ(ws, msg, wss)
       break
 
+    case 'end_q':
+      qApi.closeQ(ws, msg, wss)
+      break
+
     case 'get_q':
       qApi.getQuestion(ws, msg)
       break
