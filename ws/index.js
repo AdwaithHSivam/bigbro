@@ -2,9 +2,7 @@ const WebSocket = require('ws')
 const wss = new WebSocket.Server({ 
   noServer: true,
 })
-const privateKey = process.env.JWT_SECRET
-const db = require('../models')
-const jwt = require('jsonwebtoken')
+const auth = require('../auth')
 
 const qApi = require('./question')
 const cApi = require('./chat')
@@ -84,17 +82,7 @@ async function validate(headers) {
   let header = headers['sec-websocket-protocol']
     let raw = JSON.parse(header)
     if (raw[0] == 'access_token'){
-      let decoded = jwt.verify(raw[1], privateKey)
-      let user = await db.user.findOne({
-        where: {
-          uid: decoded.uid
-        },
-        raw: true
-      })
-      if(user){
-        return user
-      }
-      throw Error('Bad Auth')
+      return auth.verifyJwt(raw[1])
     }
 }
 

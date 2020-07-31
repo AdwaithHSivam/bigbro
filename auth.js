@@ -3,6 +3,20 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const privateKey = process.env.JWT_SECRET
 
+exports.verifyJwt = async (token) => {
+  let decoded = jwt.verify(token, privateKey)
+  let user = await db.user.findOne({
+    where: {
+      uid: decoded.uid
+    },
+    raw: true
+  })
+  if(user){
+    return user
+  }
+  throw Error('Bad Auth')
+}
+
 exports.validate = async (username, password) => {//chain this maybe
   let user = await db.user.findOne({
     attributes: [

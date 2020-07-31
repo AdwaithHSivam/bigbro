@@ -5,9 +5,10 @@ const express = require('express')
 const db  = require('./models')
 const bodyParser = require('body-parser')
 const app = express()
+const auth = require('./auth')
 const ws = require('./ws')
 const port = process.env.PORT || 3000
-const auth = require('./auth')
+const upload = require('./store')
 
 
 app.use(bodyParser.urlencoded({
@@ -20,6 +21,15 @@ app.use(bodyParser.json(), (err, req, res, next) => {
   } else {
     next()
   }
+})
+
+app.post('/profile', upload.single('upload'), function (req, res) {
+  res.json({
+    status: 'success',
+    body: {
+      key: req.file.key
+    }
+  })
 })
 
 app.post('/user/add', (req, res) => {
@@ -51,7 +61,7 @@ app.post('/validate/', (req, res) => {
 
 })
 
-app.use(express.static('app/public'))
+// app.use(express.static('app/public'))
 
 app.get('/', (req, res) => res.send('OK'))
 
