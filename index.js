@@ -8,7 +8,8 @@ const app = express()
 const auth = require('./auth')
 const ws = require('./ws')
 const port = process.env.PORT || 3000
-const upload = require('./store')
+const upload = require('./store');
+const { MulterError } = require('multer');
 
 
 app.use(bodyParser.urlencoded({
@@ -23,7 +24,8 @@ app.use(bodyParser.json(), (err, req, res, next) => {
   }
 })
 
-app.post('/profile', upload.single('upload'), function (req, res) {
+app.post('/profile', upload.single('upload'), (req, res) => {
+  if (!req.file) return res.status(400).end()
   res.json({
     status: 'success',
     body: {
