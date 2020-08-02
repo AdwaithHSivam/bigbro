@@ -4,7 +4,10 @@ const multer = require('multer')
 const multerS3 = require('multer-s3')
 const auth = require('./auth')
 
-const s3 = new aws.S3()
+const s3 = new aws.S3({
+  accessKeyId: process.env.ACCESS_KEY_ID,
+  secretAccessKey: process.env.SECRET_ACCESS_KEY
+})
 
 const upload = multer({
   fileFilter: (req, file, cb)  => {

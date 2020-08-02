@@ -9,7 +9,6 @@ const auth = require('./auth')
 const ws = require('./ws')
 const port = process.env.PORT || 3000
 const upload = require('./store');
-const { MulterError } = require('multer');
 
 
 app.use(bodyParser.urlencoded({
