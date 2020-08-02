@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
         unique: 'local',
       },
       local_cid: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         unique: 'local',
       },

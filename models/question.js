@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
         unique: 'local',
       },
       local_qid: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         allowNull: false,
         unique: 'local',
       },
