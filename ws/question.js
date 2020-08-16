@@ -22,12 +22,12 @@ exports.getQuestion = function (ws, msg) {
 }
 
 exports.addQuestion = function (ws, msg, wss) {
-  if (!msg.uid || !msg.body.local_qid) return
+  if (!msg.uid || !msg.body.uuid) return
   msg.body.uid = msg.uid
   db.question.findOrCreate({
     where: {
       uid: msg.body.uid,
-      local_qid: msg.body.local_qid
+      uuid: msg.body.uuid
     },
     defaults: msg.body,
     raw: true

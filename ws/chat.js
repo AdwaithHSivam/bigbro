@@ -23,7 +23,7 @@ exports.getChats = function (ws, msg) {
 }
 
 exports.addChat = function (ws, msg, wss) {
-  if (!msg.uid || !msg.body.qid || !msg.body.local_cid) return
+  if (!msg.uid || !msg.body.qid || !msg.body.uuid) return
   msg.body.uid = msg.uid
   db.question.findByPk(msg.body.qid, {
     raw: true,
@@ -36,7 +36,7 @@ exports.addChat = function (ws, msg, wss) {
       db.chat.findOrCreate({
         where: {
           uid: msg.body.uid,
-          local_cid: msg.body.local_cid
+          uuid: msg.body.uuid
         },
         defaults: msg.body,
         raw: true
